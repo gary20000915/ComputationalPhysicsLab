@@ -70,7 +70,6 @@ class Particle:
         mass = self.mass
         return [self.fx/mass, self.fy/mass]
 
-
 if __name__=='__main__':
 
 
