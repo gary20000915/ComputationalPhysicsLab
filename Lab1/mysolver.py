@@ -80,6 +80,8 @@ def _update_rk2(derive_func,y0,dt,*args):
     k2 = derive_func(y_temp,*args) 
     
     y0 = np.add(y0, (dt / 2) * (k1 + k2))
+    # note: if use: y0 += (dt / 2) * (k1 + k2) ==> error
+    # Yet use y0 = y0 + (dt / 2) * (k1 + k2) ==> it can work, and np.add() can work too.
 
     return y0 # <- change here. just a placeholder
 
@@ -135,7 +137,7 @@ if __name__=='__main__':
     dt = t/N
     y0 = np.array([1, 0]) # [pos_0, vel_0]
 
-    sol = solve_ivp(oscillator, y0, dt, N, method="RK4", args=(K,M))
+    sol = solve_ivp(oscillator, y0, dt, N, method="RK2", args=(K,M))
 
     print("sol=",sol)
     print("Done!")
