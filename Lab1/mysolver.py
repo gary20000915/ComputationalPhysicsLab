@@ -10,7 +10,7 @@ For the course, computational physics lab
 
 import numpy as np
 
-def solve_ivp(derive_func, y0, dt, N, method, args):
+def solve_ivp(derive_func, y0, t, dt, N, method, args):
     """
     Solve Initial Value Problems. 
 
@@ -25,14 +25,16 @@ def solve_ivp(derive_func, y0, dt, N, method, args):
     :return: array_like. solutions. 
     """
     sol_pos, sol_vel = np.array([]), np.array([])
+    t = 0
     for _ in range(N):
+        t += dt
         sol_pos = np.append(sol_pos, y0[0])
         sol_vel = np.append(sol_vel, y0[1]) 
-        y0 = _update(derive_func,y0, dt, method, *args)
+        y0 = _update(derive_func, y0, t, dt, method, *args)
 
     return [sol_pos, sol_vel]
 
-def _update(derive_func,y0, dt, method, *args):
+def _update(derive_func, y0, t, dt, method, *args):
     """
     Update the IVP with different numerical method
 
@@ -47,37 +49,37 @@ def _update(derive_func,y0, dt, method, *args):
     """
 
     if method=="Euler":
-        ynext = _update_euler(derive_func,y0,dt,*args)
+        ynext = _update_euler(derive_func,y0, t, dt,*args)
     elif method=="RK2":
-        ynext = _update_rk2(derive_func,y0,dt,*args)
+        ynext = _update_rk2(derive_func,y0, t, dt,*args)
     elif method=="RK4":
-        ynext = _update_rk4(derive_func,y0,dt,*args)
+        ynext = _update_rk4(derive_func,y0,t, dt,*args)
     else:
         print("Error: mysolve doesn't supput the method",method)
         quit()
     return ynext
 
-def _update_euler(derive_func,y0,dt,*args):
+def _update_euler(derive_func,y0, t, dt,*args):
     """
     Update the IVP with the Euler's method
 
     :return: the next step solution y
 
     """
-    y0 = np.add(y0, derive_func(y0, *args) * dt)
+    y0 = np.add(y0, derive_func(y0, t, *args) * dt)
 
     return y0 # <- change here. just a placeholder
 
-def _update_rk2(derive_func,y0,dt,*args):
+def _update_rk2(derive_func, y0, t, dt,*args):
     """
     Update the IVP with the RK2 method
 
     :return: the next step solution y
     """
 
-    k1 = derive_func(y0,*args)
+    k1 = derive_func(y0, t, *args)
     y_temp = y0 + dt * k1 
-    k2 = derive_func(y_temp,*args) 
+    k2 = derive_func(y_temp, t, *args) 
     
     y0 = np.add(y0, (dt / 2) * (k1 + k2))
     # note: if use: y0 += (dt / 2) * (k1 + k2) ==> error
@@ -85,20 +87,20 @@ def _update_rk2(derive_func,y0,dt,*args):
 
     return y0 # <- change here. just a placeholder
 
-def _update_rk4(derive_func,y0,dt,*args):
+def _update_rk4(derive_func,y0, t, dt,*args):
     """
     Update the IVP with the RK4 method
 
     :return: the next step solution y
     """
 
-    k1 = derive_func(y0,*args)
+    k1 = derive_func(y0, t, *args)
     y_temp = y0 + (dt/2) * k1 # temp for virtual step y*
-    k2 = derive_func(y_temp,*args)
+    k2 = derive_func(y_temp, t, *args)
     y_temp = y0 + (dt/2) * k2
-    k3 = derive_func(y_temp,*args)
+    k3 = derive_func(y_temp, t, *args)
     y_temp = y0 + dt * k3
-    k4 = derive_func(y_temp,*args)
+    k4 = derive_func(y_temp, t, *args)
     
     y0 = np.add(y0, (1/6) * dt * (k1 + 2*k2 + 2*k3 + k4))
 
@@ -117,7 +119,7 @@ if __name__=='__main__':
     """
 
 
-    def oscillator(y,K,M):
+    def oscillator(y,t,K,M):
         '''
         This is the function (osci) defined in the [position, velocity] 
         and [derivative(position), derivative(velocity)]
@@ -129,7 +131,7 @@ if __name__=='__main__':
         yder =  np.zeros(2)
         yder[0] = y[1]
         yder[1] = -y[0] * K/M # the difinition of the acceleration, which is depend on the position.
-        
+        print(t) # check to update time
         return yder
 
     K, M  = 1, 1
@@ -137,7 +139,7 @@ if __name__=='__main__':
     dt = t/N
     y0 = np.array([1, 0]) # [pos_0, vel_0]
 
-    sol = solve_ivp(oscillator, y0, dt, N, method="RK2", args=(K,M))
+    sol = solve_ivp(oscillator, y0, t, dt, N, method="RK2", args=(K,M))
 
-    print("sol=",sol)
+    # print("sol=",sol)
     print("Done!")
