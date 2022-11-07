@@ -85,6 +85,10 @@ class Particles:
         return
 
 
+    #########################################################
+    # These are not the general setup fot setter and getter #
+    #########################################################
+    '''
     def get_time(self):
         return self._time
     
@@ -129,6 +133,56 @@ class Particles:
     
     def set_tags(self, IDs):
         self._tags = IDs
+        return
+    '''
+    #########################################################
+    
+    @property # This is the general "getter"
+    def time(self):
+        return self._time
+    @time.setter # This is the general "setter"
+    def time(self, time):
+        self._time = time
+        return
+    
+    @property # This is the general "getter"
+    def masses(self):
+        return self._masses
+    @masses.setter # This is the general "setter"
+    def masses(self, masses):
+        self._massses = masses
+        return
+    
+    @property # This is the general "getter"
+    def positions(self):
+        return self._positions
+    @positions.setter # This is the general "setter"
+    def masses(self, positions):
+        self._positions = positions
+        return
+    
+    @property # This is the general "getter"
+    def velocities(self):
+        return self._velocities
+    @velocities.setter # This is the general "setter"
+    def velocities(self, velocities):
+        self._velocities = velocities
+        return
+    
+    @property # This is the general "getter"
+    def accelerations(self):
+        return self._accelerations
+    @accelerations.setter # This is the general "setter"
+    def accelerations(self, accelerations):
+        self._accelerations = accelerations
+        return
+    
+    @property # This is the general "getter"
+    def tags(self):
+        return self._tags
+    @tags.setter # This is the general "setter"
+    def tags(self, tags):
+        self._tags = tags
         return
     
     def output(self, fn, time):
