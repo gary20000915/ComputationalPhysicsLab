@@ -58,31 +58,31 @@ class Particles:
     for the N-body simulation. 
 
     """
-    def __init__(self, N:int = 100):
-        """
-        Prepare memories for N particles
+    # def __init__(self, N:int = 100):
+    #     """
+    #     Prepare memories for N particles
 
-        :param N: number of particles.
+    #     :param N: number of particles.
 
-        By default: particle properties include:
-                nparticles: int. number of particles
-                _masses: (N,1) mass of each particle
-                _positions:  (N,3) x,y,z positions of each particle
-                _velocities:  (N,3) vx, vy, vz velocities of each particle
-                _accelerations:  (N,3) ax, ay, az accelerations of each partciel
-                _tags:  (N)   tag of each particle
-                _time: float. the simulation time 
+    #     By default: particle properties include:
+    #             nparticles: int. number of particles
+    #             _masses: (N,1) mass of each particle
+    #             _positions:  (N,3) x,y,z positions of each particle
+    #             _velocities:  (N,3) vx, vy, vz velocities of each particle
+    #             _accelerations:  (N,3) ax, ay, az accelerations of each partciel
+    #             _tags:  (N)   tag of each particle
+    #             _time: float. the simulation time 
 
-        """
-        self.nparticles = N
-        self._time = 0 # initial time = 0
-        self._masses = np.ones((N, 1))
-        self._positions = np.zeros((N, 3))
-        self._velocities = np.zeros((N, 3))
-        self._accelerations = np.zeros((N, 3))
-        self._tags = np.linspace(1, N, N)
+    #     """
+    #     self.nparticles = N
+    #     self._time = 0 # initial time = 0
+    #     self._masses = np.ones((N, 1))
+    #     self._positions = np.zeros((N, 3))
+    #     self._velocities = np.zeros((N, 3))
+    #     self._accelerations = np.zeros((N, 3))
+    #     self._tags = np.linspace(1, N, N)
         
-        return
+    #     return
 
 
     #########################################################
@@ -136,6 +136,15 @@ class Particles:
         return
     '''
     #########################################################
+    
+    N = 100
+    nparticles = N
+    _time = 0 # initial time = 0
+    _masses = np.ones((N, 1))
+    _positions = np.zeros((N, 3))
+    _velocities = np.zeros((N, 3))
+    _accelerations = np.zeros((N, 3))
+    _tags = np.linspace(1, N, N)
     
     @property # This is the general "getter"
     def time(self):
@@ -327,7 +336,7 @@ if __name__=='__main__':
 
 
     # test Particles() here
-    particles = Particles(N=100)
+    particles = Particles()
     # test NbodySimulation(particles) here
     sim = NbodySimulation(particles=particles)
     print("Done")
