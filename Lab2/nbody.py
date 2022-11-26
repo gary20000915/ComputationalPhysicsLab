@@ -58,37 +58,33 @@ class Particles:
     for the N-body simulation. 
 
     """
-    # def __init__(self, N:int = 100):
-    #     """
-    #     Prepare memories for N particles
+    def __init__(self, N:int = 100):
+        """
+        Prepare memories for N particles
 
-    #     :param N: number of particles.
+        :param N: number of particles.
 
-    #     By default: particle properties include:
-    #             nparticles: int. number of particles
-    #             _masses: (N,1) mass of each particle
-    #             _positions:  (N,3) x,y,z positions of each particle
-    #             _velocities:  (N,3) vx, vy, vz velocities of each particle
-    #             _accelerations:  (N,3) ax, ay, az accelerations of each partciel
-    #             _tags:  (N)   tag of each particle
-    #             _time: float. the simulation time 
+        By default: particle properties include:
+                nparticles: int. number of particles
+                _masses: (N,1) mass of each particle
+                _positions:  (N,3) x,y,z positions of each particle
+                _velocities:  (N,3) vx, vy, vz velocities of each particle
+                _accelerations:  (N,3) ax, ay, az accelerations of each partciel
+                _tags:  (N)   tag of each particle
+                _time: float. the simulation time 
 
-    #     """
-    #     self.nparticles = N
-    #     self._time = 0 # initial time = 0
-    #     self._masses = np.ones((N, 1))
-    #     self._positions = np.zeros((N, 3))
-    #     self._velocities = np.zeros((N, 3))
-    #     self._accelerations = np.zeros((N, 3))
-    #     self._tags = np.linspace(1, N, N)
+        """
+        self.nparticles = N
+        self._time = 0 # initial time = 0
+        self._masses = np.ones((N, 1))
+        self._positions = np.zeros((N, 3))
+        self._velocities = np.zeros((N, 3))
+        self._accelerations = np.zeros((N, 3))
+        self._tags = np.linspace(1, N, N)
         
-    #     return
+        return
 
 
-    #########################################################
-    # These are not the general setup fot setter and getter #
-    #########################################################
-    '''
     def get_time(self):
         return self._time
     
@@ -133,65 +129,6 @@ class Particles:
     
     def set_tags(self, IDs):
         self._tags = IDs
-        return
-    '''
-    #########################################################
-    
-    N = 100
-    nparticles = N
-    _time = 0 # initial time = 0
-    _masses = np.ones((N, 1))
-    _positions = np.zeros((N, 3))
-    _velocities = np.zeros((N, 3))
-    _accelerations = np.zeros((N, 3))
-    _tags = np.linspace(1, N, N)
-    
-    @property # This is the general "getter"
-    def time(self):
-        return self._time
-    @time.setter # This is the general "setter"
-    def time(self, time):
-        self._time = time
-        return
-    
-    @property # This is the general "getter"
-    def masses(self):
-        return self._masses
-    @masses.setter # This is the general "setter"
-    def masses(self, masses):
-        self._massses = masses
-        return
-    
-    @property # This is the general "getter"
-    def positions(self):
-        return self._positions
-    @positions.setter # This is the general "setter"
-    def masses(self, positions):
-        self._positions = positions
-        return
-    
-    @property # This is the general "getter"
-    def velocities(self):
-        return self._velocities
-    @velocities.setter # This is the general "setter"
-    def velocities(self, velocities):
-        self._velocities = velocities
-        return
-    
-    @property # This is the general "getter"
-    def accelerations(self):
-        return self._accelerations
-    @accelerations.setter # This is the general "setter"
-    def accelerations(self, accelerations):
-        self._accelerations = accelerations
-        return
-    
-    @property # This is the general "getter"
-    def tags(self):
-        return self._tags
-    @tags.setter # This is the general "setter"
-    def tags(self, tags):
-        self._tags = tags
         return
     
     def output(self, fn, time):
@@ -252,7 +189,7 @@ class NbodySimulation:
 
     def setup(self, G=1, 
                     rsoft=0.01, 
-                    method="RK4", 
+                    method="Euler", 
                     io_freq=10, 
                     io_title="particles",
                     io_screen=True,
@@ -273,6 +210,13 @@ class NbodySimulation:
         
         """
         # TODO:
+        self.G = G
+        self.rsoft = rsoft
+        self.method = method
+        self.io_freq = io_freq
+        self.io_title = io_title
+        self.io_screen = io_screen
+        self.visualized = visualized
         return
 
     def evolve(self, dt:float=0.01, tmax:float=1):
@@ -285,7 +229,6 @@ class NbodySimulation:
         
         """
         # TODO:
-
         method = self.method
         if method=="Euler":
             _update_particles = self._update_particles_euler
@@ -308,7 +251,28 @@ class NbodySimulation:
         # =====================================================
 
         # TODO:
-
+        particles = self.particles # call the class: Particles
+        n = 0
+        t = particles.get_time()
+        while t < tmax:
+            # update particles
+            _update_particles(dt, particles)
+            
+            # update io
+            if (n % self.io_freq == 0):
+                if self.io_screen:
+                    print('n = ', n, 'time = ', t, 'dt = ', dt)
+                # output
+                fn = io_folder+"/data_"+self.io_title+"_"+str(n).zfill(5)+".txt"
+                print(fn)
+                self.particles.output(fn, t)
+            
+            # update time
+            if t + dt > tmax:
+                dt = tmax - t
+            t += dt
+            n += 1
+            
         print("Done!")
         return
 
@@ -317,10 +281,59 @@ class NbodySimulation:
         Calculate the acceleration.
         """
         # TODO:
+        G = self.G
+        acc = np.zeros((self.nparticles, 3))
+        
+        for i in range(self.nparticles):
+            for j in range(self.nparticles):
+                if j > i:
+                    posx = pos[:, 0]
+                    posy = pos[:, 1]
+                    posz = pos[:, 2]
+                    print('pos: ', posx, posy, posz)
+                    x = posx[i] - posx[j]
+                    y = posy[i] - posy[j]
+                    z = posz[i] - posz[j]
+                    r = np.sqrt(x**2 + y**2 + z**2)
+                    # r = np.sqrt(np.sum(np.square(pos1) - np.square(pos2)))
+                    theta = np.arccos(z / r)
+                    phi = np.arctan2(y, x)
+                    print('phi, theta: ', phi, theta)
+                    F = - G * mass[i, 0] * mass[j, 0] / np.square(r)
+                    Fx = F * np.cos(phi)
+                    Fy = F * np.sin(phi)
+                    Fz = 0
+                    print('Fy :', Fy)
+                    # Fx = F * np.sin(phi) * np.cos(theta)
+                    # Fy = F * np.sin(phi) * np.sin(theta)
+                    # Fz = F * np.cos(phi)
+                    
+                    acc[i, 0] += Fx / mass[i, 0]
+                    acc[j, 0] -= Fx / mass[j, 0]
+                    
+                    acc[i, 1] += Fy / mass[i, 0]
+                    acc[j, 1] -= Fy / mass[j, 0]
+                    
+                    acc[i, 2] += Fz / mass[i, 0]
+                    acc[j, 2] -= Fz / mass[j, 0]
+                    print('acc: ', acc)
         return acc
 
     def _update_particles_euler(self, dt, particles:Particles):
         # TODO:
+        mass = particles.get_masses()
+        pos = particles.get_positions()
+        vel = particles.get_velocities()
+        acc = self._calculate_acceleration(mass, pos)
+        y0 = np.array([pos, vel])
+        yder = np.array([vel, acc])
+        
+        y0 = np.add(y0, yder * dt)
+        print("check: ", y0[0])
+        particles.set_positions(y0[0])
+        particles.set_velocities(y0[1])
+        particles.set_accelerations(yder[1])
+        
         return particles
 
     def _update_particles_rk2(self, dt, particles:Particles):
@@ -334,9 +347,11 @@ class NbodySimulation:
 
 if __name__=='__main__':
 
-
     # test Particles() here
-    particles = Particles()
+    particles = Particles(N=10)
     # test NbodySimulation(particles) here
     sim = NbodySimulation(particles=particles)
+    sim.setup(G = 6.67e-8, io_freq=2, io_screen=True, io_title="test")
+    sim.evolve(dt = 1, tmax = 10)
+    print(sim.G)
     print("Done")
