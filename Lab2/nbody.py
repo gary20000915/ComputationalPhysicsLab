@@ -257,22 +257,20 @@ class NbodySimulation:
         while t < tmax:
             # update particles
             _update_particles(dt, particles)
-            
             # update io
             if (n % self.io_freq == 0):
                 if self.io_screen:
-                    print('n = ', n, 'time = ', t, 'dt = ', dt)
-                # output
-                fn = io_folder+"/data_"+self.io_title+"_"+str(n).zfill(5)+".txt"
-                print(fn)
-                self.particles.output(fn, t)
+                    # print('n = ', n, 'time = ', t, 'dt = ', dt)
+                    # output
+                    fn = io_folder+"/data_"+self.io_title+"_"+str(n).zfill(5)+".txt"
+                    # print(fn)
+                    self.particles.output(fn, t)
             
             # update time
             if t + dt > tmax:
                 dt = tmax - t
             t += dt
             n += 1
-            
         print("Done!")
         return
 
@@ -290,20 +288,16 @@ class NbodySimulation:
                     posx = pos[:, 0]
                     posy = pos[:, 1]
                     posz = pos[:, 2]
-                    print('pos: ', posx, posy, posz)
                     x = posx[i] - posx[j]
                     y = posy[i] - posy[j]
                     z = posz[i] - posz[j]
                     r = np.sqrt(x**2 + y**2 + z**2)
-                    # r = np.sqrt(np.sum(np.square(pos1) - np.square(pos2)))
-                    theta = np.arccos(z / r)
+                    # theta = np.arccos(z / r)
                     phi = np.arctan2(y, x)
-                    print('phi, theta: ', phi, theta)
                     F = - G * mass[i, 0] * mass[j, 0] / np.square(r)
                     Fx = F * np.cos(phi)
                     Fy = F * np.sin(phi)
                     Fz = 0
-                    print('Fy :', Fy)
                     # Fx = F * np.sin(phi) * np.cos(theta)
                     # Fy = F * np.sin(phi) * np.sin(theta)
                     # Fz = F * np.cos(phi)
@@ -316,7 +310,6 @@ class NbodySimulation:
                     
                     acc[i, 2] += Fz / mass[i, 0]
                     acc[j, 2] -= Fz / mass[j, 0]
-                    print('acc: ', acc)
         return acc
 
     def _update_particles_euler(self, dt, particles:Particles):
@@ -329,19 +322,58 @@ class NbodySimulation:
         yder = np.array([vel, acc])
         
         y0 = np.add(y0, yder * dt)
-        print("check: ", y0[0])
+        
         particles.set_positions(y0[0])
         particles.set_velocities(y0[1])
-        particles.set_accelerations(yder[1])
+        particles.set_accelerations(acc)
         
         return particles
 
     def _update_particles_rk2(self, dt, particles:Particles):
         # TODO:
+        mass = particles.get_masses()
+        pos = particles.get_positions()
+        vel = particles.get_velocities()
+        acc = self._calculate_acceleration(mass, pos)
+        
+        y0 = np.array([pos, vel])
+        yder = np.array([vel, acc])
+        k1 = yder
+        y_temp = y0 + dt * k1 
+        acc = self._calculate_acceleration(mass, y_temp[0])
+        k2 = np.array([y_temp[1], acc])
+        y0 = np.add(y0, (dt / 2) * (k1 + k2))
+        
+        particles.set_positions(y0[0])
+        particles.set_velocities(y0[1])
+        particles.set_accelerations(acc)
         return particles
 
     def _update_particles_rk4(self, dt, particles:Particles):
         # TODO:
+        mass = particles.get_masses()
+        pos = particles.get_positions()
+        vel = particles.get_velocities()
+        acc = self._calculate_acceleration(mass, pos)
+        
+        y0 = np.array([pos, vel])
+        yder = np.array([vel, acc])
+        k1 = yder
+        y_temp = y0 + 0.5 * dt * k1 
+        acc = self._calculate_acceleration(mass, y_temp[0])
+        k2 = np.array([y_temp[1], acc])
+        y_temp = y0 + 0.5 * dt * k2
+        acc = self._calculate_acceleration(mass, y_temp[0])
+        k3 = np.array([y_temp[1], acc])
+        y_temp = y0 + dt * k3
+        acc = self._calculate_acceleration(mass, y_temp[0])
+        k4 = np.array([y_temp[1], acc])
+        
+        y0 = np.add(y0, (1/6) * dt * (k1 + 2*k2 + 2*k3 + k4))
+        
+        particles.set_positions(y0[0])
+        particles.set_velocities(y0[1])
+        particles.set_accelerations(acc)
         return particles
 
 
