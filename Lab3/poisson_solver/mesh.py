@@ -51,8 +51,6 @@ class Mesh2D:
         return self._nx
     def set_nx(self, nx):
         self._nx = nx
-        print(123,"thisi si")
-        # hiwehrihewir
         self._setup()
         return
 
@@ -158,7 +156,8 @@ class Mesh2D:
         return self._mesh
     def set_mesh(self, mesh):
         self._mesh = mesh
-        self._setup()
+        if (mesh.size != self._mesh.size): 
+            print("error! size conflict!")
         return
     
     def get_xx(self):
@@ -206,8 +205,8 @@ class Mesh2D:
 
 if __name__=='__main__':
     mesh = Mesh2D(nx = 3, ny = 3, buff_size=1)
-    mesh.set_nx(1)
-    mesh.set_ny(1)
+    # mesh.set_nx(32)
+    # mesh.set_ny(32)
     
     u = mesh.get_mesh()
     nx = mesh.get_nx()
